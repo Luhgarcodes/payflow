@@ -12,7 +12,7 @@ async function start(): Promise<void> {
     console.log('Database connection established');
 
     await connectRedis();
-
+    const x:number = 'a';
     server = app.listen(config.port, () => {
       console.log(`Server started on port ${config.port}`);
     });
