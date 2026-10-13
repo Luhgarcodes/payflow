@@ -1,5 +1,8 @@
 import { createClient } from 'redis';
 import config from '../config';
+import { logger } from '../utils/logger';
+
+const redisLogger = logger.child({ component: 'redis' });
 
 export const redisClient = createClient({
   url: config.redis.url,
@@ -15,13 +18,13 @@ export const describeError = (err: unknown): string => {
 };
 
 redisClient.on('error', (err: unknown) => {
-  console.error('[Redis] error:', describeError(err));
+  redisLogger.error({ reason: describeError(err) }, 'Redis error');
 });
 redisClient.on('ready', () => {
-  console.log('[Redis] connection ready');
+  redisLogger.info('Redis connection ready');
 });
 redisClient.on('end', () => {
-  console.log('[Redis] connection closed');
+  redisLogger.info('Redis connection closed');
 });
 
 export const isRedisReady = (): boolean => redisClient.isReady;
@@ -30,7 +33,10 @@ export async function connectRedis(): Promise<void> {
   try {
     await redisClient.connect();
   } catch (err) {
-    console.error('[Redis] could not connect, continuing without cache:', describeError(err));
+    redisLogger.warn(
+      { reason: describeError(err) },
+      'Could not connect to Redis, continuing without cache',
+    );
   }
 }
 

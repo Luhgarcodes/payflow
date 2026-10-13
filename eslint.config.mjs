@@ -33,7 +33,7 @@ export default defineConfig(
         'error',
         { ignorePrimitives: { string: true } },
       ],
-      'no-console': 'off',
+      'no-console': 'error',
       eqeqeq: ['error', 'always'],
     },
   },

@@ -44,7 +44,7 @@ export default function errorHandler(
   }
 
   const status = hasNumber(err, 'statusCode') ?? hasNumber(err, 'status') ?? 500;
-  if (status >= 500) console.error('Unhandled error:', err);
+  if (status >= 500) req.log.error({ err }, 'Unhandled error');
 
   const message = err instanceof Error ? err.message : 'Internal Server Error';
   res.status(status).json({

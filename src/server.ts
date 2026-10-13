@@ -3,30 +3,31 @@ import app from './app';
 import config from './config';
 import { sequelize } from './models';
 import { connectRedis, disconnectRedis } from './db/redis';
+import { logger } from './utils/logger';
 
 let server: Server | undefined;
 
 async function start(): Promise<void> {
   try {
     await sequelize.authenticate();
-    console.log('Database connection established');
+    logger.info('Database connection established');
 
     await connectRedis();
 
     server = app.listen(config.port, () => {
-      console.log(`Server started on port ${config.port}`);
+      logger.info({ port: config.port }, 'Server started');
     });
   } catch (err) {
-    console.error('Failed to start server:', err);
+    logger.fatal({ err }, 'Failed to start server');
     process.exit(1);
   }
 }
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
-  console.log(`${signal} received, shutting down`);
+  logger.info({ signal }, 'Shutting down');
 
   setTimeout(() => {
-    console.error('Shutdown timed out, forcing exit');
+    logger.error('Shutdown timed out, forcing exit');
     process.exit(1);
   }, config.shutdownTimeoutMs).unref();
 
@@ -39,7 +40,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
     });
   }
   await Promise.allSettled([sequelize.close(), disconnectRedis()]);
-  console.log('Shutdown complete');
+  logger.info('Shutdown complete');
   process.exit(0);
 }
 
