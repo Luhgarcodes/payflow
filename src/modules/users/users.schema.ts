@@ -3,7 +3,7 @@ import { KYC_TIERS, ROLES, userIdSchema } from '../../types/domain';
 import { paginationQuerySchema } from '../../utils/pagination';
 
 const name = z.string().trim().min(1).max(100);
-const email = z.email().trim().toLowerCase().max(255);
+const email = z.string().trim().toLowerCase().pipe(z.email().max(255));
 const phoneNo = z.string().regex(/^[0-9]{10}$/, 'must be exactly 10 digits');
 const password = z
   .string()
