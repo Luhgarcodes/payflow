@@ -21,7 +21,7 @@ PayFlow moves money, so type errors that reach production are expensive. The cod
 
 **Type-safety gates.**
 
-- `npm run typecheck` (`tsc --noEmit`) runs in CI before tests and blocks merges.
+- `npm run typecheck` (`tsc --noEmit`) runs in CI before tests on every push and PR.
 - ESLint uses typescript-eslint `strictTypeChecked` and `stylisticTypeChecked`, and treats `no-explicit-any`, `no-non-null-assertion` and `no-floating-promises` as errors.
 - `process.env` may only be read in `src/config`.
 
