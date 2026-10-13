@@ -422,7 +422,7 @@ Reversal of a P2P transfer (admin approved)
           <tr><td>NFR-09</td><td>Auditability</td><td>Every money movement is traceable from request ID to transaction, ledger entries and webhook deliveries. Financial and audit records are append-only.</td></tr>
           <tr><td>NFR-10</td><td>Reliability</td><td>Graceful shutdown finishes in-flight requests and the active job within 10 seconds. Jobs survive a worker restart.</td></tr>
           <tr><td>NFR-11</td><td>Observability</td><td>Every log line is JSON with a request ID. Business metrics (payments per minute, failure rate, webhook lag) are exported.</td></tr>
-          <tr><td>NFR-12</td><td>Quality</td><td>At least 90% line coverage on the ledger and money modules, 80% on other services, 70% overall. CI blocks merges when lint or tests fail.</td></tr>
+          <tr><td>NFR-12</td><td>Quality</td><td>At least 90% line coverage on the ledger and money modules, 80% on other services, 70% overall. CI fails when lint or tests fail, and PRs are merged only after CI passes.</td></tr>
           <tr><td>NFR-13</td><td>Maintainability</td><td>Only the ledger module writes ledger rows. No business logic in routes or controllers.</td></tr>
           <tr><td>NFR-14</td><td>Documentation</td><td>Every endpoint is described in OpenAPI, including error codes and idempotency behaviour.</td></tr>
         </table>
@@ -517,7 +517,7 @@ const phases = [
     reqs: [
       { id: "FND-01", p: "must", areas: [13], title: "Version control and branching",
         desc: "Initialize git, push to a remote, and work through feature branches and pull requests from now on.",
-        ac: ["Repository has a main branch protected from direct pushes", "Every later requirement lands through a PR", ".env is ignored and .env.example is committed"] },
+        ac: ["Repository is pushed to a remote with a main branch", "Every later requirement lands through a PR", ".env is ignored and .env.example is committed"] },
       { id: "FND-02", p: "must", areas: [13, 4], title: "Linting, formatting and pre-commit hooks",
         desc: "Add ESLint and Prettier with shared config, and run them on staged files before every commit.",
         ac: ["npm run lint and npm run format scripts exist", "Husky with lint-staged blocks commits with lint errors", "Commit messages follow Conventional Commits"] },
@@ -531,7 +531,7 @@ const phases = [
           "Seeders create an admin, a support user, 3 users and 1 merchant"] },
       { id: "FND-05", p: "must", areas: [2, 12], title: "TypeScript foundation and type-safety gates",
         desc: "The codebase is already strict TypeScript. Lock that in: shared domain types, typed-ESLint rules and a typecheck step that runs before tests in CI.",
-        ac: ["npm run typecheck (tsc --noEmit) runs in CI and blocks merges", "typescript-eslint bans explicit any, non-null assertions and floating promises", "An ADR records the TypeScript setup: CommonJS output, tsx for development, tsc for builds", "Domain IDs and enums (roles, KYC tiers, transaction status) are shared types used by models and services"] },
+        ac: ["npm run typecheck (tsc --noEmit) runs in CI on every push and PR", "typescript-eslint bans explicit any, non-null assertions and floating promises", "An ADR records the TypeScript setup: CommonJS output, tsx for development, tsc for builds", "Domain IDs and enums (roles, KYC tiers, transaction status) are shared types used by models and services"] },
       { id: "FND-06", p: "must", areas: [2, 3, 4], title: "Validation and cursor pagination helpers",
         desc: "A validate(schema) middleware and a reusable cursor pagination helper for append-only lists such as transactions. Request types come from the schemas.",
         ac: ["Invalid input returns 400 with code VALIDATION_FAILED and field-level details", "Handlers receive bodies typed with z.infer, replacing the 'as' casts in the users service", "Cursors are opaque, encode (created_at, id) and are tamper-checked", "requireFields is removed once Zod covers every route"] },
