@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QuikCRM - Requirements</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-2: #1e2230;
+    --border: #2a2f3f;
+    --text: #e6e8ef;
+    --muted: #9aa0b4;
+    --accent: #5eead4;
+    --accent-2: #818cf8;
+    --done: #34d399;
+    --must: #f87171;
+    --should: #fbbf24;
+    --could: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  a { color: var(--accent-2); }
+  code {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.85em;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(15, 17, 23, 0.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+  .header-row {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  h1 { margin: 0; font-size: 1.35rem; }
+  h1 span { color: var(--accent); }
+  .progress-wrap { flex: 1; min-width: 220px; max-width: 380px; }
+  .progress-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+  .bar { height: 10px; background: var(--panel-2); border-radius: 999px; overflow: hidden; }
+  .bar > div {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.3s;
+  }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type="search"], select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+  button {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+
+  .layout { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 230px 1fr; gap: 24px; padding: 24px; }
+  nav.toc { position: sticky; top: 90px; align-self: start; font-size: 0.88rem; }
+  nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 5px 10px; border-radius: 6px; }
+  nav.toc a:hover { color: var(--text); background: var(--panel); }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } nav.toc { display: none; } }
+
+  section { margin-bottom: 40px; }
+  section > h2 { font-size: 1.3rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+  .muted { color: var(--muted); }
+  .warning {
+    background: rgba(251, 191, 36, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    margin-top: 12px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: var(--panel-2); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  td.yes { color: var(--done); text-align: center; }
+  td.no { color: var(--muted); text-align: center; }
+  td.own { color: var(--should); text-align: center; }
+
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; margin-right: 4px; }
+  .tag.must { background: rgba(248, 113, 113, 0.15); color: var(--must); }
+  .tag.should { background: rgba(251, 191, 36, 0.15); color: var(--should); }
+  .tag.could { background: rgba(96, 165, 250, 0.15); color: var(--could); }
+  .tag.area { background: rgba(129, 140, 248, 0.15); color: var(--accent-2); font-weight: 500; }
+  .method { font-family: Consolas, monospace; font-weight: 700; font-size: 0.78rem; }
+  .GET { color: #34d399; } .POST { color: #60a5fa; } .PUT, .PATCH { color: #fbbf24; } .DELETE { color: #f87171; } .WS { color: #c084fc; }
+
+  .phase { margin-bottom: 28px; }
+  .phase-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase.complete .phase-head { border-color: var(--done); }
+  .phase-num {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    background: var(--panel-2);
+    color: var(--accent);
+  }
+  .phase.complete .phase-num { background: var(--done); color: #052e1f; }
+  .phase-title { flex: 1; }
+  .phase-title h3 { margin: 0; font-size: 1.05rem; }
+  .phase-title .meta { font-size: 0.8rem; color: var(--muted); }
+  .chev { color: var(--muted); transition: transform 0.2s; }
+  .phase.open .chev { transform: rotate(90deg); }
+  .phase-body { display: none; padding-top: 12px; }
+  .phase.open .phase-body { display: block; }
+  .phase-goal { color: var(--muted); font-size: 0.9rem; margin: 0 0 12px 4px; }
+
+  .req {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  .req.done { border-color: rgba(52, 211, 153, 0.5); }
+  .req.hidden { display: none; }
+  .req-head { display: flex; gap: 10px; align-items: flex-start; }
+  .req-head input { margin-top: 5px; accent-color: var(--done); cursor: pointer; width: 16px; height: 16px; }
+  .req-id { font-family: Consolas, monospace; color: var(--accent); font-size: 0.82rem; white-space: nowrap; margin-top: 2px; }
+  .req-title { font-weight: 600; flex: 1; }
+  .req.done .req-title { color: var(--muted); text-decoration: line-through; }
+  .req-desc { font-size: 0.88rem; color: var(--muted); margin: 6px 0 6px 26px; }
+  .req-ac { margin: 0 0 8px 26px; padding-left: 18px; font-size: 0.86rem; }
+  .req-ac li { margin: 3px 0; }
+  .req-tags { margin-left: 26px; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .entity h4 { margin: 0 0 6px; color: var(--accent); font-family: Consolas, monospace; }
+  .entity ul { margin: 0; padding-left: 18px; font-size: 0.84rem; color: var(--muted); }
+  .entity .status { font-size: 0.75rem; }
+  .structure { font-family: Consolas, monospace; font-size: 0.82rem; white-space: pre; overflow-x: auto; color: var(--muted); }
+  .flow { font-family: Consolas, monospace; font-size: 0.82rem; color: var(--muted); white-space: pre; overflow-x: auto; }
+  .cov-bar { height: 6px; background: var(--panel-2); border-radius: 999px; overflow: hidden; min-width: 80px; }
+  .cov-bar > div { height: 100%; background: var(--done); }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <h1>QuikCRM <span>Requirements</span></h1>
+    <div class="progress-wrap">
+      <div class="progress-label" id="progressLabel">0 / 0 requirements done</div>
+      <div class="bar"><div id="progressBar"></div></div>
+    </div>
+    <div class="controls">
+      <input type="search" id="search" placeholder="Search requirements..." />
+      <select id="priorityFilter">
+        <option value="">All priorities</option>
+        <option value="mvp">MVP only</option>
+        <option value="must">Must</option>
+        <option value="should">Should</option>
+        <option value="could">Could</option>
+      </select>
+      <button id="toggleAll">Expand all</button>
+      <button id="reset">Reset</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <a href="#overview">1. Overview</a>
+    <a href="#stack">2. Tech stack</a>
+    <a href="#roles">3. Roles and permissions</a>
+    <a href="#domain">4. Domain rules</a>
+    <a href="#flows">5. Money flows</a>
+    <a href="#data">6. Data model</a>
+    <a href="#phases">7. Functional requirements</a>
+    <a href="#api">8. API catalog</a>
+    <a href="#nfr">9. Non-functional requirements</a>
+    <a href="#structure">10. Target folder structure</a>
+    <a href="#coverage">11. Roadmap coverage</a>
+    <a href="#dod">12. Definition of done</a>
+    <a href="learning-roadmap.html">Open learning roadmap</a>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <h2>1. Overview</h2>
+      <div class="panel">
+        <p><strong>PayFlow</strong> is a backend API for a digital wallet and payments platform. Users keep money in an INR wallet,
+          top it up through a payment gateway, send money to other users, pay merchants through payment links and QR codes,
+          schedule recurring payments, and download statements. Merchants accept payments, issue refunds, receive webhooks and get daily settlements.
+          Support and admin staff review KYC, investigate risk flags and run reconciliation.</p>
+        <p>The project is designed so that building it end to end exercises every area in the
+          <a href="learning-roadmap.html">learning roadmap</a>. Money raises the bar on correctness: double-entry bookkeeping, transactions,
+          row locking, idempotency, exactly-once webhook handling and reconciliation are requirements here, not extras.
+          Each requirement is tagged with the roadmap areas it practices, and section 11 shows your coverage.</p>
+        <p><strong>Starting point:</strong> this repository is written in strict TypeScript (<code>tsx</code> for development,
+          <code>tsc</code> builds to <code>dist/</code>). It has a users module with bcrypt password hashing in a layered structure
+          (routes, controllers, services) under <code>/api/v1</code>, Sequelize with PostgreSQL, Redis caching with explicit public or per-user
+          scope and versioned invalidation, central error handling, graceful shutdown, and Docker Compose for Redis.
+          The earlier cricket and practice code and its database tables have been removed; the only table this project owns is <code>users</code>.</p>
+        <p><strong>MVP:</strong> the <span class="tag must">MUST</span> requirements in phases P0 to P4 form the minimum viable product,
+          a complete and portfolio-ready payments backend on their own. Use the "MVP only" filter to focus on them.</p>
+        <p><strong>Estimated effort:</strong> about 40 to 55 focused days for the MVP and 70 to 100 days for everything,
+          at roughly 6 focused hours a day including tests and docs. Each phase header shows its own estimate.</p>
+        <p class="muted"><strong>How to use this page:</strong> work through the phases in order. Tick a requirement only when all its
+          acceptance criteria pass and it meets the definition of done in section 12. Progress is saved in this browser.</p>
+        <div class="warning"><strong>Learning project only.</strong> PayFlow uses a mock payment gateway and fake data. Never store real card numbers,
+          bank details, PAN or Aadhaar numbers, and do not process real money with it. Rules below are simplified and only inspired by
+          real regulations; they are not a compliance guide.</div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <h2>2. Tech stack</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Concern</th><th>Required</th><th>Optional / stretch</th></tr>
+          <tr><td>Runtime and language</td><td>Node.js 20+, TypeScript in strict mode (tsx for development, tsc for builds)</td><td>Run TypeScript natively with Node type stripping</td></tr>
+          <tr><td>Web framework</td><td>Express 5</td><td>Rebuild one module in NestJS or Fastify</td></tr>
+          <tr><td>Database</td><td>PostgreSQL with Sequelize, migrations via sequelize-cli or Umzug, BIGINT money columns</td><td>Table partitioning, read replica</td></tr>
+          <tr><td>Cache and shared state</td><td>Redis (cache, rate limits, OTPs, locks, velocity counters, sorted sets, pub/sub)</td><td>Redis Streams</td></tr>
+          <tr><td>Validation</td><td>Zod</td><td>Joi</td></tr>
+          <tr><td>Auth and crypto</td><td>bcrypt, jsonwebtoken, Node crypto (AES-256-GCM, HMAC SHA-256)</td><td>TOTP two-factor auth for staff (otplib)</td></tr>
+          <tr><td>Payment gateway</td><td>Mock gateway built in this repo, with signed webhooks</td><td>Razorpay or Stripe test mode</td></tr>
+          <tr><td>Background jobs</td><td>BullMQ, node-cron</td><td>RabbitMQ or Kafka with the outbox pattern</td></tr>
+          <tr><td>Real time</td><td>Socket.IO with Redis adapter</td><td>Server-Sent Events</td></tr>
+          <tr><td>Files and reports</td><td>Multer for KYC documents, streaming CSV statements</td><td>PDF statements (pdfkit), S3 pre-signed URLs</td></tr>
+          <tr><td>Email and SMS</td><td>Nodemailer with Mailtrap or Ethereal, a logged mock SMS provider</td><td>AWS SES and SNS</td></tr>
+          <tr><td>Testing</td><td>Jest, Supertest</td><td>fast-check property tests, Testcontainers</td></tr>
+          <tr><td>Docs</td><td>OpenAPI 3 with Swagger UI</td><td>GraphQL schema docs</td></tr>
+          <tr><td>Logging and monitoring</td><td>Pino, pino-http</td><td>Sentry, Prometheus and Grafana</td></tr>
+          <tr><td>Tooling</td><td>ESLint, Prettier, Husky, lint-staged</td><td>Commitlint</td></tr>
+          <tr><td>Deployment</td><td>Docker, Docker Compose, GitHub Actions</td><td>AWS ECS or EC2, RDS, ElastiCache, KMS, Nginx, Kubernetes</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="roles">
+      <h2>3. Roles and permissions</h2>
+      <p class="muted">Every authenticated user has exactly one role. "Own" means only on their own wallet or merchant account. Support sees masked data only.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Action</th><th>User</th><th>Merchant</th><th>Support</th><th>Admin</th><th>Guest</th></tr>
+          <tr><td>Register, log in, manage own profile</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="own">Register only</td></tr>
+          <tr><td>Submit KYC</td><td class="own">Own</td><td class="own">Own (business)</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td>Review and approve KYC</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Top up wallet, send P2P transfers, manage beneficiaries</td><td class="own">Own</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td>Pay a merchant payment link</td><td class="own">Own</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td>Create payment links, issue refunds, configure webhooks</td><td class="no">No</td><td class="own">Own</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>View transactions and statements</td><td class="own">Own</td><td class="own">Own</td><td class="own">Any (masked)</td><td class="yes">Any</td><td class="no">No</td></tr>
+          <tr><td>Schedule recurring payments</td><td class="own">Own</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td>Request a reversal</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Approve reversals, freeze or unfreeze wallets</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Review risk flags</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Manage limits, fees and cashback rules</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>View reconciliation runs, audit logs, metrics</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>View a payment link before paying</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="domain">
+      <h2>4. Domain rules</h2>
+      <div class="panel">
+        <h3>Money and ledger</h3>
+        <ul>
+          <li>All amounts are integers in <strong>paise</strong> (₹1 = 100 paise), stored as <code>BIGINT</code> and sent in JSON as integers with <code>"currency": "INR"</code>. Floats are never used for money.</li>
+          <li>PostgreSQL returns <code>BIGINT</code> as a string in Node. Convert it in exactly one place (the money utility) and never with <code>parseFloat</code>.</li>
+          <li><strong>Double-entry:</strong> every money movement is one journal (a row in <code>transactions</code>) with two or more ledger entries whose debits equal its credits.</li>
+          <li>Ledger entries are <strong>immutable</strong>. Mistakes are corrected with a reversing journal, never with UPDATE or DELETE. A database trigger enforces this.</li>
+          <li>A wallet's balance equals the sum of its ledger entries. The <code>wallets.balance_paise</code> column is a cached copy, updated in the same database transaction as the entries, and reconciliation proves they match.</li>
+          <li>Wallet balances can never go negative. This is enforced by a <code>CHECK (balance_paise &gt;= 0)</code> constraint and by checking the balance after locking the row.</li>
+          <li>System ledger accounts: <code>system:gateway_clearing</code>, <code>system:fees</code>, <code>system:cashback</code>, <code>system:settlement_payable</code> and <code>system:suspense</code>.</li>
+          <li>Rounding: fees and cashback round half up to the nearest paisa. When splitting an amount, the remainder goes to the last share so the parts always sum to the total.</li>
+        </ul>
+        <h3>Limits and security</h3>
+        <ul>
+          <li><strong>KYC tiers</strong> (simplified, inspired by prepaid wallet rules):
+            <code>none</code> can only view; <code>min</code> (phone verified) has a maximum balance of ₹10,000 and loads up to ₹10,000 a month;
+            <code>full</code> (PAN and identity verified) has a maximum balance of ₹2,00,000 and can send up to ₹1,00,000 a day.</li>
+          <li>Every debit needs the user's <strong>transaction PIN</strong> (4 to 6 digits, stored hashed). Five wrong attempts lock the PIN for 30 minutes.</li>
+          <li>Transfers above ₹10,000, and the first transfer to a new beneficiary, need a one-time password (OTP) as step-up verification.</li>
+          <li>A new beneficiary can receive at most ₹5,000 in total during their first 24 hours.</li>
+          <li>PAN and bank account numbers are encrypted with AES-256-GCM and only ever returned or logged masked, for example <code>XXXXXX1234</code>.</li>
+        </ul>
+        <h3>Payments</h3>
+        <ul>
+          <li>Every money-moving POST requires an <code>Idempotency-Key</code> header. The same key with the same body returns the original result. The same key with a different body returns 422 <code>IDEMPOTENCY_KEY_REUSED</code>.</li>
+          <li>P2P transfers are free. Merchant payments carry a merchant discount rate (MDR, default 2% = 200 basis points) taken from the merchant's share at payment time and credited to <code>system:fees</code>.</li>
+          <li>Refunds are allowed only on successful merchant payments, within 180 days. Partial refunds are allowed and the refunded total can never exceed the original amount. The MDR is not returned to the merchant.</li>
+          <li>Merchant balances are settled T+1: a daily job moves the previous day's net merchant balance to a mock bank payout.</li>
+          <li>Status flows:
+            top-up <code>created</code> → <code>pending_gateway</code> → <code>succeeded</code> | <code>failed</code> | <code>expired</code> (after 15 minutes);
+            transfer and payment <code>processing</code> → <code>succeeded</code> | <code>failed</code>, and <code>succeeded</code> → <code>reversed</code> by an admin only;
+            refund <code>pending</code> → <code>succeeded</code> | <code>failed</code>.</li>
+        </ul>
+        <h3>General</h3>
+        <ul>
+          <li>All timestamps are stored in UTC. Statements, monthly limits and insights use the Asia/Kolkata calendar month.</li>
+          <li>Every error response has a stable machine-readable <code>code</code>, for example <code>INSUFFICIENT_BALANCE</code>, <code>LIMIT_EXCEEDED</code>, <code>KYC_REQUIRED</code>, <code>PIN_LOCKED</code> or <code>WALLET_FROZEN</code>.</li>
+          <li>Users and merchants are soft-deleted with <code>is_active = false</code>. Financial records are never deleted.</li>
+          <li>Unique fields (email, phone) are unique among active rows only, using partial unique indexes.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="flows">
+      <h2>5. Money flows</h2>
+      <p class="muted">The journal each operation posts. Every row is one ledger entry. Debits always equal credits.</p>
+      <div class="panel flow">Top-up ₹500 (gateway confirmed)
+  DEBIT   system:gateway_clearing          50000
+  CREDIT  wallet:user_A                    50000
+
+P2P transfer ₹200 from A to B
+  DEBIT   wallet:user_A                    20000
+  CREDIT  wallet:user_B                    20000
+
+Merchant payment ₹1,000 with 2% MDR
+  DEBIT   wallet:user_A                   100000
+  CREDIT  wallet:merchant_M                98000
+  CREDIT  system:fees                       2000
+
+Refund ₹400 to A (MDR not returned)
+  DEBIT   wallet:merchant_M                40000
+  CREDIT  wallet:user_A                    40000
+
+Cashback ₹20 to A
+  DEBIT   system:cashback                   2000
+  CREDIT  wallet:user_A                     2000
+
+Settlement of merchant M (T+1)
+  DEBIT   wallet:merchant_M                58000
+  CREDIT  system:settlement_payable        58000
+
+Reversal of a P2P transfer (admin approved)
+  DEBIT   wallet:user_B                    20000
+  CREDIT  wallet:user_A                    20000   (new journal with reversal_of_id)</div>
+    </section>
+
+    <section id="data">
+      <h2>6. Data model</h2>
+      <p class="muted">All tables use UUID primary keys, snake_case columns, <code>created_at</code> and <code>updated_at</code>. Money columns are <code>BIGINT</code> paise. All schema changes go through migrations.</p>
+      <div class="grid-2" id="entities"></div>
+    </section>
+
+    <section id="phases">
+      <h2>7. Functional requirements</h2>
+      <p class="muted">
+        <span class="tag must">MUST</span> core of the project
+        <span class="tag should">SHOULD</span> expected at 3 years experience
+        <span class="tag could">COULD</span> stretch goal
+        <span class="tag area">#5</span> roadmap area practiced
+      </p>
+      <div id="phaseList"></div>
+    </section>
+
+    <section id="api">
+      <h2>8. API catalog</h2>
+      <p class="muted">All REST endpoints are prefixed with <code>/api/v1</code>. List endpoints use cursor pagination (<code>cursor</code>, <code>limit</code> up to 100) and resource-specific filters. Endpoints marked ★ require an <code>Idempotency-Key</code> header.</p>
+      <div class="table-wrap">
+        <table id="apiTable">
+          <tr><th>Method</th><th>Path</th><th>Access</th><th>Purpose</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="nfr">
+      <h2>9. Non-functional requirements</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>ID</th><th>Category</th><th>Requirement</th></tr>
+          <tr><td>NFR-01</td><td>Correctness</td><td>Zero tolerance: every journal balances, every wallet balance equals its ledger sum, and daily reconciliation reports zero mismatches.</td></tr>
+          <tr><td>NFR-02</td><td>Correctness</td><td>Exactly-once effect for money movements under client retries, duplicate or out-of-order webhooks, and process crashes. A failed request never leaves a partial journal.</td></tr>
+          <tr><td>NFR-03</td><td>Consistency</td><td>Consistency over availability: when PostgreSQL is unavailable, money-moving endpoints fail closed with 503. Balances are never served from a stale cache after a write.</td></tr>
+          <tr><td>NFR-04</td><td>Performance</td><td>p95 under 100 ms for balance reads and under 400 ms for transfers at 100 transfers per second on a single instance, with zero deadlocks.</td></tr>
+          <tr><td>NFR-05</td><td>Performance</td><td>A payment notification reaches the connected Socket.IO client in under 500 ms.</td></tr>
+          <tr><td>NFR-06</td><td>Scalability</td><td>The API is stateless: tokens, rate limits, OTPs, locks and sockets work correctly with 3 instances behind a load balancer.</td></tr>
+          <tr><td>NFR-07</td><td>Security</td><td>Passwords and PINs hashed with bcrypt (cost 10 or more). PII encrypted at rest and masked in responses and logs. No secrets in the repository. OWASP Top 10 reviewed.</td></tr>
+          <tr><td>NFR-08</td><td>Abuse protection</td><td>Auth endpoints: 5 requests per minute per IP. Money-moving endpoints: 10 per minute per user. Everything else: 100 per minute per user.</td></tr>
+          <tr><td>NFR-09</td><td>Auditability</td><td>Every money movement is traceable from request ID to transaction, ledger entries and webhook deliveries. Financial and audit records are append-only.</td></tr>
+          <tr><td>NFR-10</td><td>Reliability</td><td>Graceful shutdown finishes in-flight requests and the active job within 10 seconds. Jobs survive a worker restart.</td></tr>
+          <tr><td>NFR-11</td><td>Observability</td><td>Every log line is JSON with a request ID. Business metrics (payments per minute, failure rate, webhook lag) are exported.</td></tr>
+          <tr><td>NFR-12</td><td>Quality</td><td>At least 90% line coverage on the ledger and money modules, 80% on other services, 70% overall. CI blocks merges when lint or tests fail.</td></tr>
+          <tr><td>NFR-13</td><td>Maintainability</td><td>Only the ledger module writes ledger rows. No business logic in routes or controllers.</td></tr>
+          <tr><td>NFR-14</td><td>Documentation</td><td>Every endpoint is described in OpenAPI, including error codes and idempotency behaviour.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="structure">
+      <h2>10. Target folder structure</h2>
+      <div class="panel structure">src/
+  app.ts                    Express app (no listen), used by tests
+  server.ts                 API bootstrap and graceful shutdown
+  worker.ts                 BullMQ workers and cron jobs (separate process)
+  types/                    shared types and Express Request augmentation
+  config/                   env loading and validation
+  db/                       Sequelize and Redis clients (connection lifecycle only)
+  cache/                    cache-aside helpers and namespace versioning
+  models/                   Sequelize models and associations
+  migrations/  seeders/
+  middleware/               auth, rbac, validate, idempotency, rateLimit, cache, requestId, errorHandler
+  modules/
+    auth/  users/  kyc/  wallets/  ledger/  topups/  transfers/  beneficiaries/
+    merchants/  payment-links/  refunds/  scheduled-payments/  statements/
+    insights/  risk/  cashback/  settlements/  reconciliation/  webhooks/
+    notifications/  admin/
+      &lt;module&gt;.routes.ts  &lt;module&gt;.controller.ts  &lt;module&gt;.service.ts
+      &lt;module&gt;.schema.ts  &lt;module&gt;.test.ts
+  jobs/                     queue definitions and processors
+  sockets/                  Socket.IO setup and rooms
+  utils/                    AppError, money, crypto, response helpers
+mock-gateway/               separate mini service that simulates the payment gateway
+docs/                       openapi.yaml, ADRs, these HTML pages
+tests/integration/
+playground/                 experiments, never imported by src
+dist/                       tsc build output (git-ignored)
+tsconfig.json  Dockerfile  docker-compose.yml  .github/workflows/ci.yml</div>
+    </section>
+
+    <section id="coverage">
+      <h2>11. Roadmap coverage</h2>
+      <p class="muted">How many requirements practice each roadmap area, and how many of those you have completed.</p>
+      <div class="table-wrap">
+        <table id="coverageTable">
+          <tr><th>#</th><th>Roadmap area</th><th>Requirements</th><th>Done</th><th style="width: 140px">Progress</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="dod">
+      <h2>12. Definition of done</h2>
+      <div class="panel">
+        <p>A requirement counts as done only when all of these are true:</p>
+        <ul>
+          <li>All acceptance criteria pass.</li>
+          <li>Request bodies, params and query strings are validated with Zod, and errors use the standard format with a code.</li>
+          <li>Unit tests cover the service logic. An integration test covers the happy path and at least one failure path.</li>
+          <li>Anything that moves money has a test asserting the ledger still balances afterwards.</li>
+          <li>The endpoint is documented in OpenAPI.</li>
+          <li>Any schema change is a migration, not <code>sync()</code>.</li>
+          <li>No PII or secrets appear in logs, and new log lines are structured.</li>
+          <li><code>npm run typecheck</code> passes in strict mode with no <code>any</code>, <code>@ts-ignore</code> or unchecked casts on request data.</li>
+          <li>Lint passes and the code is merged through a pull request with a conventional commit message.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>PayFlow API requirements · pair with <a href="learning-roadmap.html">learning-roadmap.html</a></footer>
+
+<script>
+const AREAS = [
+  "Node.js internals",
+  "JavaScript and TypeScript",
+  "API design",
+  "Project architecture",
+  "Databases",
+  "Authentication and security",
+  "Caching and performance",
+  "Async processing and messaging",
+  "Testing",
+  "Logging, monitoring and reliability",
+  "DevOps and deployment",
+  "System design",
+  "Git and engineering practice"
+];
+
+const phases = [
+  {
+    title: "Foundation and tooling",
+    est: "7 to 10 days",
+    goal: "Make the codebase safe to grow: version control, code quality, validated config, migrations, a money utility, and the test, logging and docs harness every later requirement needs.",
+    reqs: [
+      { id: "FND-01", p: "must", areas: [13], title: "Version control and branching",
+        desc: "Initialize git, push to a remote, and work through feature branches and pull requests from now on.",
+        ac: ["Repository has a main branch protected from direct pushes", "Every later requirement lands through a PR", ".env is ignored and .env.example is committed"] },
+      { id: "FND-02", p: "must", areas: [13, 4], title: "Linting, formatting and pre-commit hooks",
+        desc: "Add ESLint and Prettier with shared config, and run them on staged files before every commit.",
+        ac: ["npm run lint and npm run format scripts exist", "Husky with lint-staged blocks commits with lint errors", "Commit messages follow Conventional Commits"] },
+      { id: "FND-03", p: "must", areas: [4, 6], title: "Validated configuration",
+        desc: "Validate environment variables at startup with Zod so the app fails fast on missing or invalid config, including encryption keys.",
+        ac: ["App exits with a clear message when a required variable is missing", "Encryption and JWT secrets must meet a minimum length", "No process.env reads outside src/config"] },
+      { id: "FND-04", p: "must", areas: [5], title: "Migrations and seeders",
+        desc: "Replace sequelize.sync() with migrations, starting from the users table.",
+        ac: ["npm run db:migrate and npm run db:migrate:undo work on an empty database", "DB_SYNC and the sync() call in server.ts are removed",
+          "Partial unique indexes WHERE is_active on users.email and users.phone_no",
+          "Seeders create an admin, a support user, 3 users and 1 merchant"] },
+      { id: "FND-05", p: "must", areas: [2, 12], title: "TypeScript foundation and type-safety gates",
+        desc: "The codebase is already strict TypeScript. Lock that in: shared domain types, typed-ESLint rules and a typecheck step that runs before tests in CI.",
+        ac: ["npm run typecheck (tsc --noEmit) runs in CI and blocks merges", "typescript-eslint bans explicit any, non-null assertions and floating promises", "An ADR records the TypeScript setup: CommonJS output, tsx for development, tsc for builds", "Domain IDs and enums (roles, KYC tiers, transaction status) are shared types used by models and services"] },
+      { id: "FND-06", p: "must", areas: [2, 3, 4], title: "Validation and cursor pagination helpers",
+        desc: "A validate(schema) middleware and a reusable cursor pagination helper for append-only lists such as transactions. Request types come from the schemas.",
+        ac: ["Invalid input returns 400 with code VALIDATION_FAILED and field-level details", "Handlers receive bodies typed with z.infer, replacing the 'as' casts in the users service", "Cursors are opaque, encode (created_at, id) and are tamper-checked", "requireFields is removed once Zod covers every route"] },
+      { id: "FND-07", p: "must", areas: [2, 9], title: "Money utility",
+        desc: "One module for all money handling: parsing, formatting, percentage fees in basis points, rounding and splitting. Nothing else does money arithmetic.",
+        ac: ["A branded Paise type, so a plain number or rupee value cannot be passed where paise is expected", "Amounts are integers in paise; floats are rejected", "BIGINT strings from PostgreSQL are converted safely", "Fee and split functions are table-tested, including rounding edge cases, and splits always sum to the total", "Formats ₹1,00,000.00 in the Indian numbering style"] },
+      { id: "FND-08", p: "must", areas: [9], title: "Test harness",
+        desc: "Jest and Supertest with a dedicated test database and Redis, so every later requirement ships with tests.",
+        ac: ["npm test runs unit and integration tests", "Test database is migrated before and cleaned after each run", "Existing users endpoints have passing tests"] },
+      { id: "FND-09", p: "must", areas: [10], title: "Structured logging with request IDs",
+        desc: "Replace console.log with Pino and pino-http. Every request gets an ID that appears in all its log lines and the response header.",
+        ac: ["Logs are JSON in production and pretty in development", "Passwords, PINs, OTPs, tokens, PAN and account numbers are redacted", "X-Request-Id header is returned", "No console.log left in src"] },
+      { id: "FND-10", p: "must", areas: [3], title: "OpenAPI skeleton and error codes",
+        desc: "Serve Swagger UI at /docs from docs/openapi.yaml, and give every AppError a stable code from one catalog.",
+        ac: ["Errors return { status, code, message, details }", "The error code catalog is documented in OpenAPI", "Existing users endpoints are documented"] }
+    ]
+  },
+  {
+    title: "Authentication, security and KYC",
+    est: "11 to 15 days",
+    goal: "Secure accounts and money: JWT auth, a transaction PIN, OTP step-up, KYC tiers, encrypted PII and abuse protection.",
+    reqs: [
+      { id: "AUTH-01", p: "must", areas: [6, 3], title: "Registration and phone verification",
+        desc: "POST /auth/register creates a user or merchant account. A 6-digit OTP sent by mock SMS verifies the phone. Move bcrypt hashing from users.service into the auth module.",
+        ac: ["Password must be at least 8 characters with a letter and a number", "OTP stored in Redis for 5 minutes, single use, at most 5 attempts", "Duplicate email or phone returns 409", "password_hash is never returned"] },
+      { id: "AUTH-02", p: "must", areas: [6], title: "Login with access and refresh tokens",
+        desc: "POST /auth/login returns a 15-minute access token and a 7-day refresh token in an httpOnly cookie.",
+        ac: ["Wrong credentials return 401 with a generic message", "Access token holds user id, role and KYC tier only", "Refresh token stored hashed with its expiry and device info"] },
+      { id: "AUTH-03", p: "must", areas: [6, 7], title: "Token rotation and logout",
+        desc: "Rotate refresh tokens on every refresh. Logout revokes the token and blocklists the access token in Redis until it expires.",
+        ac: ["A reused refresh token revokes the whole token family", "Logout from all devices is supported", "Login from a new device triggers a notification"] },
+      { id: "AUTH-04", p: "must", areas: [6, 4], title: "Auth and RBAC middleware",
+        desc: "authenticate() verifies the JWT, authorize(...roles) and ownership checks enforce the permission matrix in section 3.",
+        ac: ["Missing or invalid token returns 401, wrong role returns 403", "Users can only touch their own wallet", "Every protected route has tests for 401 and 403"] },
+      { id: "JOB-01", p: "must", areas: [8, 4], title: "Job queue and worker process",
+        desc: "BullMQ queues and a separate worker.ts process, needed now because OTPs, emails and notifications must not be sent inside requests.",
+        ac: ["API never sends email or SMS inline", "Failed jobs retry 3 times with exponential backoff", "Permanently failed jobs go to a dead-letter queue", "Worker shuts down gracefully, finishing the active job"] },
+      { id: "AUTH-05", p: "must", areas: [6, 8], title: "Password reset with OTP",
+        desc: "Forgot-password sends an OTP through the queue. Resetting the password revokes all sessions.",
+        ac: ["Response is identical whether or not the account exists", "OTP single use with at most 5 attempts", "All refresh tokens revoked after reset"] },
+      { id: "SEC-01", p: "must", areas: [6], title: "Transaction PIN",
+        desc: "Users set a 4 to 6 digit PIN, stored hashed, that is required for every debit.",
+        ac: ["Five wrong attempts lock the PIN for 30 minutes, tracked atomically", "Changing the PIN needs the old PIN or an OTP", "PIN never appears in logs or responses"] },
+      { id: "SEC-02", p: "must", areas: [6], title: "PII encryption and masking",
+        desc: "Encrypt PAN and bank account numbers with AES-256-GCM using a key from config. Return and log them masked only.",
+        ac: ["Ciphertext, IV and auth tag stored; tampered data fails to decrypt", "Key rotation is possible with a key ID column", "A test proves logs never contain the plain value"] },
+      { id: "KYC-01", p: "must", areas: [3, 5, 6], title: "KYC submission and review",
+        desc: "Users submit PAN (format checked) and an identity document upload. Support approves or rejects. Approval upgrades the tier and its limits.",
+        ac: ["Documents limited to PDF, JPG or PNG up to 5 MB, streamed to storage", "Status flow pending → approved | rejected with a reason", "Every decision is audited", "Rejected users can resubmit"] },
+      { id: "AUTH-06", p: "must", areas: [6, 7], title: "Rate limiting",
+        desc: "Redis-backed limits as defined in NFR-08, shared across instances.",
+        ac: ["Exceeding a limit returns 429 with Retry-After", "Limits work correctly with 3 app instances", "TRUST_PROXY makes per-IP limits correct behind a proxy"] },
+      { id: "AUTH-07", p: "must", areas: [6], title: "Security hardening",
+        desc: "Helmet, a strict CORS allow-list, request body size limits, and a documented OWASP Top 10 review.",
+        ac: ["npm audit shows no high or critical issues", "CORS rejects origins not in the allow-list", "A SECURITY doc lists each OWASP item and its mitigation"] },
+      { id: "AUTH-08", p: "could", areas: [6], title: "Two-factor auth for staff",
+        desc: "TOTP two-factor authentication required for support and admin logins.",
+        ac: ["Enrolment with QR code and recovery codes", "Staff cannot reach admin routes without the second factor"] }
+    ]
+  },
+  {
+    title: "Wallets, ledger and top-ups",
+    est: "10 to 14 days",
+    goal: "Build the heart of the system: an immutable double-entry ledger, wallets that always reconcile, and top-ups through a realistic, unreliable payment gateway.",
+    reqs: [
+      { id: "LED-01", p: "must", areas: [5, 4], title: "Double-entry ledger core",
+        desc: "ledger_accounts, transactions and ledger_entries tables, and a postJournal() service that is the only way to move money.",
+        ac: ["Rejects any journal whose debits and credits differ", "All entries and balance updates commit in one database transaction", "A database trigger blocks UPDATE and DELETE on ledger_entries", "System accounts are created by a seeder"] },
+      { id: "WAL-01", p: "must", areas: [3, 5], title: "Wallets",
+        desc: "Each user and merchant gets one INR wallet linked to a ledger account. Balance and wallet details endpoints.",
+        ac: ["Wallet created automatically when KYC reaches min", "Frozen wallets reject debits and credits with WALLET_FROZEN", "Balance response includes available balance and remaining limits"] },
+      { id: "WAL-02", p: "must", areas: [5, 7], title: "Balance consistency and caching",
+        desc: "Keep wallets.balance_paise in step with the ledger and cache balance reads per user with strict invalidation.",
+        ac: ["CHECK constraint prevents negative balances", "An invariant test confirms balance equals ledger sum after every money test", "Cache invalidated in the same code path as the write, so a user always sees their own change"] },
+      { id: "GW-01", p: "must", areas: [3, 12], title: "Mock payment gateway",
+        desc: "A small separate service that creates orders, simulates checkout success or failure, and sends HMAC-signed webhooks to PayFlow.",
+        ac: ["Webhooks can be delayed, duplicated or delivered out of order on purpose", "Each event has a unique event ID and a signature header", "Produces a daily settlement CSV for reconciliation"] },
+      { id: "TOP-01", p: "must", areas: [3, 5], title: "Top-ups with payment intents",
+        desc: "Create a payment intent and gateway order. Credit the wallet only when the gateway confirms through a webhook.",
+        ac: ["Never credits based on the client's word, only the verified webhook", "KYC load limits checked before creating the intent", "Intents expire after 15 minutes through a scheduled job"] },
+      { id: "TOP-02", p: "must", areas: [6, 8], title: "Webhook ingestion",
+        desc: "Verify the signature, store the raw event, deduplicate by gateway event ID, respond 200 quickly, and process in a job.",
+        ac: ["Invalid signatures return 401 and are logged", "Duplicate events are processed exactly once", "Out-of-order events cannot move a succeeded intent backwards", "Signature comparison is constant time"] },
+      { id: "TXN-01", p: "must", areas: [3, 5], title: "Transaction history",
+        desc: "List a wallet's transactions with cursor pagination and filters for type, status, date range and amount range.",
+        ac: ["Backed by an index on (account_id, created_at, id)", "Results stay stable while new transactions arrive", "Each item shows counterparty, amount, direction and balance after"] },
+      { id: "LIM-01", p: "must", areas: [5, 6], title: "KYC limit enforcement",
+        desc: "Enforce maximum balance, monthly load and daily transfer limits per KYC tier, computed from the ledger.",
+        ac: ["Exceeding a limit returns LIMIT_EXCEEDED with the remaining allowance", "Monthly limits use the Asia/Kolkata calendar month", "Limits are checked inside the same locked transaction as the debit"] }
+    ]
+  },
+  {
+    title: "Transfers, merchant payments and refunds",
+    est: "12 to 17 days",
+    goal: "Move money between parties safely under retries and concurrency, and support merchants end to end.",
+    reqs: [
+      { id: "P2P-01", p: "must", areas: [5, 3], title: "P2P transfers",
+        desc: "Send money to another user by phone, email or wallet ID, with PIN verification and an atomic ledger journal.",
+        ac: ["Wallet rows locked with SELECT ... FOR UPDATE in a consistent order (by wallet ID) to avoid deadlocks", "Insufficient balance returns INSUFFICIENT_BALANCE and writes nothing", "Cannot send to yourself or to a frozen wallet"] },
+      { id: "P2P-02", p: "must", areas: [3, 5], title: "Idempotency for money-moving requests",
+        desc: "Idempotency middleware for every ★ endpoint, backed by a unique constraint on (user_id, idempotency_key) and a hash of the request body.",
+        ac: ["Same key and body returns the original response and writes nothing", "Same key with a different body returns 422 IDEMPOTENCY_KEY_REUSED", "Two concurrent requests with the same key produce one transaction"] },
+      { id: "P2P-03", p: "must", areas: [5, 9, 12], title: "Concurrency proof",
+        desc: "Prove that concurrent debits can never overdraw a wallet, and record the locking strategy in an ADR.",
+        ac: ["Integration test fires 100 parallel transfers from one wallet; the balance never goes negative and the ledger balances", "No deadlock errors under the test", "ADR compares pessimistic (FOR UPDATE) and optimistic (version column) locking"] },
+      { id: "BEN-01", p: "must", areas: [6], title: "Beneficiaries and step-up OTP",
+        desc: "Save beneficiaries, apply the new-beneficiary cooling limit, and require an OTP for large or first-time transfers.",
+        ac: ["New beneficiary receives at most ₹5,000 in the first 24 hours", "Transfers above ₹10,000 need an OTP", "OTP is bound to the specific transfer amount and recipient"] },
+      { id: "MER-01", p: "must", areas: [3, 6], title: "Merchant onboarding",
+        desc: "Merchants create a business profile with category, MDR, encrypted settlement bank account and webhook settings.",
+        ac: ["Merchant cannot accept payments until business KYC is approved", "Webhook secret generated once and shown once", "MDR changes apply only to new payments"] },
+      { id: "MER-02", p: "must", areas: [3, 5], title: "Payment links and QR payments",
+        desc: "Merchants create fixed or open-amount payment links with a short code and QR payload. Users pay them from their wallet.",
+        ac: ["Link supports expiry and a maximum number of uses, enforced under concurrency", "Payment posts the three-entry journal from section 5 (customer, merchant net, fees)", "Public link view shows merchant name and amount only"] },
+      { id: "REF-01", p: "must", areas: [5, 3], title: "Refunds",
+        desc: "Merchants refund a payment fully or partially, within 180 days, posting a reversing journal.",
+        ac: ["Total refunds can never exceed the original amount, even with concurrent refund requests", "Refund fails with INSUFFICIENT_BALANCE if the merchant wallet cannot cover it", "Customer is notified"] },
+      { id: "LIVE-01", p: "must", areas: [3, 8, 12], title: "Real-time notifications",
+        desc: "Socket.IO pushes balance changes and incoming payments to the user's private room. Works across multiple app instances.",
+        ac: ["Socket connection requires a valid JWT", "Users can only join their own room", "Uses the Redis adapter so every instance can emit"] },
+      { id: "REV-01", p: "should", areas: [6, 5], title: "Reversals with maker-checker approval",
+        desc: "Support requests a reversal of a transaction, an admin approves it, and a reversing journal is posted.",
+        ac: ["The requester cannot approve their own request", "Reversal fails safely if the recipient has already spent the money (moved to suspense for follow-up)", "Fully audited"] }
+    ]
+  },
+  {
+    title: "Statements, insights and risk",
+    est: "8 to 11 days",
+    goal: "Write efficient SQL over a large ledger, use Redis data structures properly, detect fraud patterns, and prove performance.",
+    reqs: [
+      { id: "STM-01", p: "must", areas: [5], title: "Monthly statements",
+        desc: "Opening balance, every entry with a running balance, and closing balance for an Asia/Kolkata calendar month.",
+        ac: ["Running balance computed with a SQL window function", "Opening plus entries always equals closing", "Matches the wallet balance at the end of the month"] },
+      { id: "STM-02", p: "must", areas: [1], title: "Streaming CSV statement export",
+        desc: "Export a statement as CSV using a database cursor and streams.",
+        ac: ["Memory stays flat while exporting 1 million entries", "Uses stream.pipeline with proper error handling", "Client disconnect stops the query"] },
+      { id: "DB-01", p: "must", areas: [5, 7], title: "Query performance on a large ledger",
+        desc: "Seed 2 million ledger entries and make history, statement and limit queries fast.",
+        ac: ["Indexes justified with EXPLAIN ANALYZE before and after", "History page under 30 ms, statement under 200 ms", "Seeder generates realistic data in under 2 minutes"] },
+      { id: "INS-01", p: "must", areas: [5, 7], title: "Spending insights",
+        desc: "Spending by merchant category and by merchant per month, with month-over-month change.",
+        ac: ["Computed with SQL aggregates", "Cached per user with invalidation on new payments", "Month boundaries use Asia/Kolkata"] },
+      { id: "RISK-01", p: "must", areas: [6, 7], title: "Velocity fraud checks",
+        desc: "Redis counters detect suspicious patterns and block or flag transactions for review.",
+        ac: ["Rules: more than 5 transfers in a minute, more than ₹50,000 to new beneficiaries in an hour, more than 3 failed PIN attempts across devices", "Rules are configurable without code changes", "Flags appear in a support review queue"] },
+      { id: "LB-01", p: "must", areas: [7], title: "Merchant volume leaderboard",
+        desc: "A live admin dashboard of today's top merchants by payment volume using Redis sorted sets.",
+        ac: ["Updated with ZINCRBY on every merchant payment", "Top 10 read in under 5 ms", "Can be rebuilt from PostgreSQL by a script"] },
+      { id: "PERF-01", p: "must", areas: [7], title: "Load test and performance report",
+        desc: "Load test balance reads and transfers with k6 or autocannon, before and after optimizations.",
+        ac: ["Report covers p50, p95, p99, error rate and deadlocks", "Meets NFR-04 and NFR-05", "Compare single process with PM2 cluster mode"] },
+      { id: "CB-01", p: "should", areas: [8, 5], title: "Cashback engine",
+        desc: "Rule-based cashback evaluated after merchant payments and credited from the cashback account.",
+        ac: ["Rules by merchant category, minimum amount and validity dates", "Campaign budget enforced atomically, never overspent", "Cashback is credited through a job, not inside the payment request"] },
+      { id: "PERF-02", p: "should", areas: [1], title: "Offload heavy work to worker threads",
+        desc: "Generate month-end statements for all users in worker threads so the event loop stays responsive.",
+        ac: ["API p95 unaffected during the batch", "Event loop lag measured before and after"] },
+      { id: "STM-03", p: "could", areas: [1], title: "PDF statements",
+        desc: "Generate a branded PDF statement and stream it to the client or to S3.",
+        ac: ["Generated in a job for large statements", "Download link expires after 15 minutes"] }
+    ]
+  },
+  {
+    title: "Scheduled payments, settlements and reconciliation",
+    est: "8 to 11 days",
+    goal: "Run money operations reliably in the background, and prove every day that the books are correct.",
+    reqs: [
+      { id: "SCH-01", p: "must", areas: [8, 7], title: "Scheduled and recurring payments",
+        desc: "Users schedule one-off or recurring transfers. A cron job guarded by a Redis lock queues due payments.",
+        ac: ["With 3 instances running, each due payment runs exactly once", "Idempotency key is schedule ID plus run date", "Retries with backoff on insufficient balance and pauses after 3 failures, notifying the user"] },
+      { id: "SET-01", p: "must", areas: [8, 5], title: "Merchant settlements (T+1)",
+        desc: "A daily job settles each merchant's net balance to a mock bank payout and produces a settlement report.",
+        ac: ["Settlement journal posted as in section 5", "Re-running the job for the same day does nothing", "Report shows gross, fees, refunds and net"] },
+      { id: "REC-01", p: "must", areas: [5, 10], title: "Daily ledger reconciliation",
+        desc: "Check that every journal balances and every wallet balance equals its ledger sum. Alert on any mismatch.",
+        ac: ["Run results stored in reconciliation_runs", "Any mismatch raises an error-level log and an admin alert", "A deliberately corrupted test database is detected"] },
+      { id: "REC-02", p: "should", areas: [5, 8], title: "Gateway reconciliation",
+        desc: "Compare the mock gateway's settlement file with PayFlow's payment intents.",
+        ac: ["Flags payments missing on either side and amount mismatches", "File processed as a stream"] },
+      { id: "WH-01", p: "must", areas: [6, 8], title: "Outgoing merchant webhooks",
+        desc: "Notify merchants of payments and refunds with signed webhooks, retries and a delivery log.",
+        ac: ["Payload signed with HMAC SHA-256 and a timestamp to prevent replays", "Retries with exponential backoff for up to 24 hours", "Merchants can view deliveries and replay one"] },
+      { id: "NOT-01", p: "must", areas: [3, 8], title: "Notifications",
+        desc: "Email, mock SMS and in-app notifications for money received, top-ups, refunds, security events and failed scheduled payments.",
+        ac: ["Notification preferences per type and channel", "Security notifications cannot be turned off", "Sent from jobs, never inside the request"] },
+      { id: "EVT-01", p: "should", areas: [8, 12], title: "Outbox pattern",
+        desc: "Write domain events to an outbox table in the same transaction as the money movement, and relay them to the queue.",
+        ac: ["No event is lost if Redis is down at commit time", "Consumers are idempotent", "Relay publishes in order per aggregate"] }
+    ]
+  },
+  {
+    title: "Quality, documentation and observability",
+    est: "5 to 8 days",
+    goal: "Prove the system is correct, make it understandable, and make problems visible in production.",
+    reqs: [
+      { id: "TST-01", p: "must", areas: [9], title: "Unit test coverage target",
+        desc: "Building on the FND-08 harness, reach the coverage targets in NFR-12.",
+        ac: ["90% on ledger and money modules, 80% on other services", "Limit and fee rules have table-driven tests", "Tests run in under 60 seconds"] },
+      { id: "TST-02", p: "must", areas: [9], title: "End-to-end money scenario",
+        desc: "One integration scenario that runs the whole lifecycle and checks the books at the end.",
+        ac: ["Top-up, transfer, merchant payment, partial refund, settlement, reconciliation", "Reconciliation reports zero mismatches", "Runs in CI with service containers"] },
+      { id: "TST-03", p: "should", areas: [9], title: "Property-based ledger tests",
+        desc: "Use fast-check to run random sequences of operations and assert the ledger invariants always hold.",
+        ac: ["At least 1,000 generated sequences per run", "Failing cases shrink to a minimal reproduction"] },
+      { id: "DOC-01", p: "must", areas: [3], title: "OpenAPI completeness",
+        desc: "Every endpoint fully documented, including error codes and idempotency behaviour, and validated in CI.",
+        ac: ["Request, response and error schemas for every endpoint", "Auth is testable from Swagger UI", "Spec is linted in CI"] },
+      { id: "OBS-01", p: "must", areas: [10, 1], title: "Health checks and complete graceful shutdown",
+        desc: "/health for liveness and /ready for readiness. Basic SIGTERM handling exists; extend it to the worker, queues and sockets.",
+        ac: ["/ready returns 503 when PostgreSQL or Redis is down", "No journal is left half-written on shutdown", "Meets NFR-10"] },
+      { id: "OBS-02", p: "should", areas: [10], title: "Error tracking and business metrics",
+        desc: "Report errors to Sentry and expose Prometheus metrics at /metrics.",
+        ac: ["Errors include request ID and user ID but no PII", "Metrics for payments per minute, failure rate, webhook lag, queue depth and event loop lag"] },
+      { id: "AUD-01", p: "must", areas: [5, 6], title: "Audit log",
+        desc: "Append-only record of every staff action and sensitive change: KYC decisions, freezes, reversals, limit and fee changes.",
+        ac: ["Audit rows written in the same transaction as the change", "No UPDATE or DELETE allowed on audit_logs", "Admin endpoint to search by actor, entity and date"] }
+    ]
+  },
+  {
+    title: "Deployment and DevOps",
+    est: "5 to 8 days",
+    goal: "Ship it: containers, automated pipelines and a real cloud deployment with proper secret handling.",
+    reqs: [
+      { id: "OPS-01", p: "must", areas: [11], title: "Dockerize the services",
+        desc: "Multi-stage Dockerfiles for the API, worker and mock gateway, running as non-root users.",
+        ac: ["Images under 200 MB", "No dev dependencies in the final image", "Healthcheck uses /health"] },
+      { id: "OPS-02", p: "must", areas: [11], title: "Full local stack with Docker Compose",
+        desc: "docker compose up starts the API, worker, mock gateway, PostgreSQL and Redis, and runs migrations and seeders.",
+        ac: ["One command from a fresh clone", "Volumes persist database data", "Services wait for dependencies to be healthy"] },
+      { id: "OPS-03", p: "must", areas: [11, 13], title: "CI pipeline",
+        desc: "GitHub Actions runs lint, type check, unit and integration tests and builds images on every PR.",
+        ac: ["PRs cannot merge when CI fails", "Coverage uploaded as an artifact", "npm and Docker layer caching enabled"] },
+      { id: "OPS-04", p: "should", areas: [11, 6], title: "Cloud deployment",
+        desc: "Deploy to AWS (ECS or EC2) with RDS PostgreSQL and ElastiCache Redis behind a load balancer.",
+        ac: ["Secrets and encryption keys come from Secrets Manager or KMS", "HTTPS only", "Automated daily backups with point-in-time recovery and one restore drill performed", "Deploys automatically from main"] },
+      { id: "OPS-05", p: "could", areas: [11], title: "Kubernetes manifests",
+        desc: "Deployment, Service, ConfigMap, Secret and HPA manifests for the API and worker.",
+        ac: ["Liveness and readiness probes wired to health endpoints", "Runs on a local cluster with kind or minikube"] }
+    ]
+  },
+  {
+    title: "System design and advanced",
+    est: "5 to 9 days",
+    goal: "Think like a payments architect: scale, failure modes and service boundaries.",
+    reqs: [
+      { id: "SD-01", p: "must", areas: [12], title: "Scaling design doc",
+        desc: "Design PayFlow for 10,000 transactions per second during a festival sale.",
+        ac: ["Covers database scaling, ledger partitioning, caching, queues and socket scaling", "Explains why consistency beats availability for money (CAP)", "Includes a diagram and capacity estimates"] },
+      { id: "SD-02", p: "should", areas: [12, 13], title: "Architecture decision records",
+        desc: "Record the key decisions as ADRs.",
+        ac: ["At least 5 ADRs, including money representation, locking strategy, ledger design and gateway webhook handling"] },
+      { id: "SD-03", p: "could", areas: [5, 12], title: "Hot wallet mitigation",
+        desc: "A very busy merchant wallet becomes a lock bottleneck. Split it into sub-accounts and sweep them periodically.",
+        ac: ["Load test shows higher throughput for one merchant", "Merchant balance still reported correctly"] },
+      { id: "SD-04", p: "could", areas: [8, 12], title: "Extract the notification and webhook service",
+        desc: "Move notifications and outgoing webhooks into a separate service fed by Kafka or RabbitMQ from the outbox.",
+        ac: ["No lost events when the broker is down", "Consumers are idempotent", "Both services run in Docker Compose"] },
+      { id: "SD-05", p: "could", areas: [3], title: "GraphQL merchant dashboard",
+        desc: "Read-only GraphQL API for the merchant dashboard with DataLoader to avoid N+1 queries.",
+        ac: ["One query returns today's volume, recent payments and pending settlements", "Query depth and complexity limits enforced"] },
+      { id: "SD-06", p: "could", areas: [1, 7], title: "Memory leak investigation",
+        desc: "Introduce a deliberate leak in a branch, find it with heap snapshots and document the process.",
+        ac: ["Write-up with before and after heap snapshots"] }
+    ]
+  }
+];
+
+const entities = [
+  { name: "users", status: "exists, extend", fields: ["id, name, email, phone_no, password_hash (bcrypt)", "role: user | merchant | support | admin", "kyc_tier: none | min | full", "phone_verified_at, last_login_at, is_active", "partial unique on email and phone_no WHERE is_active"] },
+  { name: "refresh_tokens", status: "new", fields: ["id, user_id, token_hash, family_id", "expires_at, revoked_at, replaced_by", "device_name, user_agent, ip"] },
+  { name: "transaction_pins", status: "new", fields: ["user_id (primary key), pin_hash", "failed_attempts, locked_until", "updated_at"] },
+  { name: "kyc_profiles", status: "new", fields: ["id, user_id, type: individual | business", "status: pending | approved | rejected", "pan_encrypted, pan_last4, key_id", "document_url, reviewed_by, reviewed_at, rejection_reason"] },
+  { name: "ledger_accounts", status: "new", fields: ["id, code (unique, for example system:fees)", "owner_type: wallet | system", "normal_balance: debit | credit", "currency"] },
+  { name: "wallets", status: "new", fields: ["id, user_id (unique), ledger_account_id", "balance_paise BIGINT CHECK (balance_paise >= 0)", "status: active | frozen | closed", "version"] },
+  { name: "transactions", status: "new", fields: ["id, reference (for example PF-20261008-7K2Q)", "type: topup | p2p | merchant_payment | refund | cashback | settlement | reversal", "status, amount_paise, initiated_by", "idempotency_key, request_hash, unique (initiated_by, idempotency_key)", "reversal_of_id, metadata (JSONB)"] },
+  { name: "ledger_entries", status: "new", fields: ["id, transaction_id, account_id", "direction: debit | credit, amount_paise (> 0)", "balance_after_paise", "created_at, index (account_id, created_at, id)", "immutable (trigger), partitioned by month later"] },
+  { name: "payment_intents", status: "new", fields: ["id, wallet_id, amount_paise", "gateway_order_id (unique)", "status, expires_at", "transaction_id"] },
+  { name: "gateway_webhook_events", status: "new", fields: ["id, gateway_event_id (unique)", "type, payload (JSONB), signature_valid", "received_at, processed_at, attempts"] },
+  { name: "beneficiaries", status: "new", fields: ["id, user_id, beneficiary_user_id (unique pair)", "nickname", "cooling_until"] },
+  { name: "merchants", status: "new", fields: ["id, user_id, business_name, category", "mdr_bps (default 200)", "settlement_account_encrypted, key_id", "webhook_url, webhook_secret_hash, status"] },
+  { name: "payment_links", status: "new", fields: ["id, merchant_id, short_code (unique)", "amount_paise (null for open amount), description", "expires_at, max_uses, use_count", "status"] },
+  { name: "refunds", status: "new", fields: ["id, original_transaction_id, merchant_id", "amount_paise, reason", "status, transaction_id"] },
+  { name: "scheduled_payments", status: "new", fields: ["id, user_id, beneficiary_id", "amount_paise, frequency: once | daily | weekly | monthly", "next_run_at, end_date", "status, failure_count"] },
+  { name: "settlements", status: "new", fields: ["id, merchant_id, settlement_date (unique pair)", "gross, fees, refunds, net (paise)", "status, payout_reference, transaction_id"] },
+  { name: "cashback_rules", status: "new", fields: ["id, name, merchant_category, min_amount_paise", "percent_bps, max_cashback_paise", "budget_paise, spent_paise", "valid_from, valid_to"] },
+  { name: "risk_flags", status: "new", fields: ["id, user_id, rule, transaction_id", "status: open | cleared | confirmed", "reviewed_by, notes"] },
+  { name: "webhook_deliveries", status: "new", fields: ["id, merchant_id, event_type, payload (JSONB)", "status, attempts, next_attempt_at", "last_response_code"] },
+  { name: "outbox_events", status: "new", fields: ["id, aggregate_type, aggregate_id", "event_type, payload (JSONB)", "created_at, published_at"] },
+  { name: "notifications", status: "new", fields: ["id, user_id, type, channel", "title, body, data (JSONB)", "read_at"] },
+  { name: "reconciliation_runs", status: "new", fields: ["id, run_date, type: ledger | gateway", "status, mismatch_count", "report (JSONB)"] },
+  { name: "audit_logs", status: "new", fields: ["id, actor_id, action, entity_type, entity_id", "before (JSONB), after (JSONB)", "request_id, ip, created_at (append-only)"] }
+];
+
+const endpoints = [
+  ["POST", "/auth/register", "Guest", "Create a user or merchant account"],
+  ["POST", "/auth/verify-phone", "Guest", "Verify phone with OTP"],
+  ["POST", "/auth/login", "Guest", "Get access token and refresh cookie"],
+  ["POST", "/auth/refresh", "Refresh cookie", "Rotate tokens"],
+  ["POST", "/auth/logout", "Authenticated", "Revoke session (or all with ?all=true)"],
+  ["POST", "/auth/forgot-password", "Guest", "Send a reset OTP"],
+  ["POST", "/auth/reset-password", "Guest", "Reset password with OTP"],
+  ["GET", "/users/me", "Authenticated", "Own profile"],
+  ["PATCH", "/users/me", "Authenticated", "Update own profile"],
+  ["POST", "/users/me/pin", "User", "Set transaction PIN"],
+  ["PUT", "/users/me/pin", "User", "Change transaction PIN"],
+  ["POST", "/kyc", "User, merchant", "Submit KYC with document upload"],
+  ["GET", "/kyc/me", "User, merchant", "Own KYC status"],
+  ["GET", "/wallet", "User, merchant", "Wallet, balance and remaining limits"],
+  ["GET", "/wallet/transactions", "User, merchant", "Transaction history (cursor)"],
+  ["GET", "/transactions/:id", "Owner", "Transaction detail with ledger entries"],
+  ["POST", "/topups ★", "User", "Create a top-up payment intent"],
+  ["GET", "/topups/:id", "Owner", "Top-up status"],
+  ["POST", "/webhooks/gateway", "Gateway (signed)", "Gateway event ingestion"],
+  ["GET", "/beneficiaries", "User", "List beneficiaries"],
+  ["POST", "/beneficiaries", "User", "Add a beneficiary"],
+  ["DELETE", "/beneficiaries/:id", "User", "Remove a beneficiary"],
+  ["POST", "/transfers ★", "User", "P2P transfer (PIN, OTP when required)"],
+  ["POST", "/transfers/otp", "User", "Request a step-up OTP for a transfer"],
+  ["POST", "/merchants", "Merchant", "Create business profile"],
+  ["GET", "/merchants/me", "Merchant", "Merchant profile and settings"],
+  ["PUT", "/merchants/me/webhook", "Merchant", "Configure webhook URL and rotate secret"],
+  ["POST", "/payment-links", "Merchant", "Create a payment link"],
+  ["GET", "/payment-links/:code", "Public", "View a payment link"],
+  ["POST", "/payment-links/:code/pay ★", "User", "Pay a payment link"],
+  ["POST", "/payments/:id/refunds ★", "Merchant", "Full or partial refund"],
+  ["GET", "/merchants/me/settlements", "Merchant", "Settlement reports"],
+  ["GET", "/merchants/me/webhook-deliveries", "Merchant", "Webhook delivery log"],
+  ["POST", "/merchants/me/webhook-deliveries/:id/replay", "Merchant", "Replay a webhook"],
+  ["GET", "/scheduled-payments", "User", "List scheduled payments"],
+  ["POST", "/scheduled-payments", "User", "Create a scheduled payment"],
+  ["PATCH", "/scheduled-payments/:id", "User", "Pause, resume or cancel"],
+  ["GET", "/statements/:month", "User, merchant", "Monthly statement (YYYY-MM)"],
+  ["GET", "/statements/:month/export.csv", "User, merchant", "Stream statement as CSV"],
+  ["GET", "/insights/spending", "User", "Spending by category and merchant"],
+  ["GET", "/notifications", "Authenticated", "Notifications with unread count"],
+  ["PATCH", "/notifications/:id/read", "Authenticated", "Mark as read"],
+  ["WS", "/live (room user:<id>)", "Authenticated", "Balance and payment events"],
+  ["GET", "/admin/kyc", "Support, admin", "KYC review queue"],
+  ["PATCH", "/admin/kyc/:id", "Support, admin", "Approve or reject KYC"],
+  ["PATCH", "/admin/wallets/:id/status", "Admin", "Freeze or unfreeze a wallet"],
+  ["POST", "/admin/reversals", "Support", "Request a reversal"],
+  ["PATCH", "/admin/reversals/:id", "Admin", "Approve or reject a reversal"],
+  ["GET", "/admin/risk-flags", "Support, admin", "Risk review queue"],
+  ["PATCH", "/admin/risk-flags/:id", "Support, admin", "Clear or confirm a flag"],
+  ["GET", "/admin/merchant-leaderboard", "Admin", "Today's top merchants by volume"],
+  ["GET", "/admin/reconciliation-runs", "Admin", "Reconciliation results"],
+  ["GET", "/admin/audit-logs", "Admin", "Search audit logs"],
+  ["GET", "/health", "Public", "Liveness"],
+  ["GET", "/ready", "Public", "Readiness (database and Redis)"],
+  ["GET", "/docs", "Public", "Swagger UI"]
+];
+
+const STORAGE_KEY = "payflow-requirements-progress";
+const MVP_LAST_PHASE = 4;
+const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+const priorityLabel = { must: "MUST", should: "SHOULD", could: "COULD" };
+
+document.getElementById("entities").innerHTML = entities.map((e) => `
+  <div class="panel entity">
+    <h4>${e.name}</h4>
+    <div class="status tag ${e.status.startsWith("exists") ? "should" : "could"}">${e.status}</div>
+    <ul>${e.fields.map((f) => `<li>${f.replace(/</g, "&lt;")}</li>`).join("")}</ul>
+  </div>`).join("");
+
+document.getElementById("apiTable").insertAdjacentHTML("beforeend", endpoints.map(([m, path, access, purpose]) => `
+  <tr><td><span class="method ${m}">${m}</span></td><td><code>${path.replace(/</g, "&lt;")}</code></td><td>${access}</td><td>${purpose}</td></tr>`).join(""));
+
+const phaseList = document.getElementById("phaseList");
+phases.forEach((phase, i) => {
+  const el = document.createElement("div");
+  el.className = "phase";
+  el.id = `phase-${i}`;
+  el.innerHTML = `
+    <div class="phase-head">
+      <div class="phase-num">P${i}</div>
+      <div class="phase-title">
+        <h3>${phase.title}</h3>
+        <div class="meta"><span class="count"></span> · est. ${phase.est}</div>
+      </div>
+      <span class="chev">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="phase-goal">${phase.goal}</p>
+      ${phase.reqs.map((r) => `
+        <div class="req ${state[r.id] ? "done" : ""}" data-id="${r.id}" data-priority="${r.p}" data-mvp="${r.p === "must" && i <= MVP_LAST_PHASE}">
+          <div class="req-head">
+            <input type="checkbox" id="cb-${r.id}" ${state[r.id] ? "checked" : ""} />
+            <span class="req-id">${r.id}</span>
+            <label class="req-title" for="cb-${r.id}">${r.title}</label>
+          </div>
+          <div class="req-desc">${r.desc}</div>
+          <ul class="req-ac">${r.ac.map((a) => `<li>${a}</li>`).join("")}</ul>
+          <div class="req-tags">
+            <span class="tag ${r.p}">${priorityLabel[r.p]}</span>
+            ${r.areas.map((a) => `<span class="tag area" title="${AREAS[a - 1]}">#${a} ${AREAS[a - 1]}</span>`).join("")}
+          </div>
+        </div>`).join("")}
+    </div>`;
+  el.querySelector(".phase-head").addEventListener("click", () => el.classList.toggle("open"));
+  el.querySelectorAll("input[type=checkbox]").forEach((box) => {
+    box.addEventListener("change", (e) => {
+      const req = e.target.closest(".req");
+      state[req.dataset.id] = e.target.checked;
+      req.classList.toggle("done", e.target.checked);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateProgress();
+    });
+  });
+  phaseList.appendChild(el);
+});
+document.getElementById("phase-0").classList.add("open");
+
+const coverageTable = document.getElementById("coverageTable");
+AREAS.forEach((name, i) => {
+  coverageTable.insertAdjacentHTML("beforeend", `
+    <tr><td>${i + 1}</td><td>${name}</td><td id="cov-ids-${i + 1}"></td>
+      <td id="cov-done-${i + 1}"></td><td><div class="cov-bar"><div id="cov-bar-${i + 1}"></div></div></td></tr>`);
+});
+
+function updateProgress() {
+  const all = phases.flatMap((p) => p.reqs);
+  const done = all.filter((r) => state[r.id]).length;
+  const pct = all.length ? Math.round((done / all.length) * 100) : 0;
+  document.getElementById("progressLabel").textContent = `${done} / ${all.length} requirements done (${pct}%)`;
+  document.getElementById("progressBar").style.width = `${pct}%`;
+
+  phases.forEach((phase, i) => {
+    const phaseDone = phase.reqs.filter((r) => state[r.id]).length;
+    const el = document.getElementById(`phase-${i}`);
+    const must = phase.reqs.filter((r) => r.p === "must").length;
+    el.querySelector(".count").textContent = `${phaseDone} / ${phase.reqs.length} done · ${must} must-have`;
+    el.classList.toggle("complete", phaseDone === phase.reqs.length);
+  });
+
+  AREAS.forEach((_, i) => {
+    const area = i + 1;
+    const reqs = all.filter((r) => r.areas.includes(area));
+    const areaDone = reqs.filter((r) => state[r.id]).length;
+    document.getElementById(`cov-ids-${area}`).textContent = reqs.map((r) => r.id).join(", ");
+    document.getElementById(`cov-done-${area}`).textContent = `${areaDone} / ${reqs.length}`;
+    document.getElementById(`cov-bar-${area}`).style.width = reqs.length ? `${(areaDone / reqs.length) * 100}%` : "0";
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const priority = document.getElementById("priorityFilter").value;
+  document.querySelectorAll(".phase").forEach((phase) => {
+    let visible = 0;
+    phase.querySelectorAll(".req").forEach((req) => {
+      const matchesPriority = !priority || (priority === "mvp" ? req.dataset.mvp === "true" : req.dataset.priority === priority);
+      const show = (!q || req.textContent.toLowerCase().includes(q)) && matchesPriority;
+      req.classList.toggle("hidden", !show);
+      if (show) visible++;
+    });
+    phase.style.display = visible ? "" : "none";
+    if ((q || priority) && visible) phase.classList.add("open");
+  });
+}
+document.getElementById("search").addEventListener("input", applyFilters);
+document.getElementById("priorityFilter").addEventListener("change", applyFilters);
+
+const toggleAllBtn = document.getElementById("toggleAll");
+toggleAllBtn.addEventListener("click", () => {
+  const expand = toggleAllBtn.textContent === "Expand all";
+  document.querySelectorAll(".phase").forEach((p) => p.classList.toggle("open", expand));
+  toggleAllBtn.textContent = expand ? "Collapse all" : "Expand all";
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Clear all requirement progress?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  Object.keys(state).forEach((k) => delete state[k]);
+  document.querySelectorAll(".req input").forEach((b) => (b.checked = false));
+  document.querySelectorAll(".req").forEach((r) => r.classList.remove("done"));
+  updateProgress();
+});
+
+updateProgress();
+</script>
+</body>
+</html>
