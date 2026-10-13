@@ -1,4 +1,4 @@
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import config from '../config';
 import { getNamespaceVersion, getCache, setCache } from '../cache';
 
@@ -17,7 +17,7 @@ export interface CacheOptions {
 export const cache = (
   namespace: string,
   { scope, ttl = config.redis.defaultTtl }: CacheOptions,
-): RequestHandler => {
+): RequestHandler<Request['params'], unknown, unknown, object> => {
   return async (req, res, next) => {
     if (req.method !== 'GET') {
       next();

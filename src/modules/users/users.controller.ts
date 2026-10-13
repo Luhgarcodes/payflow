@@ -1,37 +1,44 @@
-import type { RequestHandler } from 'express';
 import * as usersService from './users.service';
+import type * as schemas from './users.schema';
 import { sendSuccess } from '../../utils/response';
-import AppError from '../../utils/AppError';
-import { isUserId, type UserId } from '../../types/domain';
+import type { ValidatedHandler } from '../../middleware/validate';
 
-type IdParams = { id: string };
-
-const parseUserId = (value: string): UserId => {
-  if (!isUserId(value)) throw new AppError('VALIDATION_FAILED', 'Invalid user id');
-  return value;
+export const list: ValidatedHandler<{ query: typeof schemas.listUsersQuerySchema }> = async (
+  req,
+  res,
+) => {
+  const page = await usersService.listUsers(req.query);
+  sendSuccess(res, page, 'Users fetched');
 };
 
-export const list: RequestHandler = async (req, res) => {
-  const users = await usersService.listUsers();
-  sendSuccess(res, users, 'Users fetched');
-};
-
-export const getById: RequestHandler<IdParams> = async (req, res) => {
-  const user = await usersService.getUserById(parseUserId(req.params.id));
+export const getById: ValidatedHandler<{ params: typeof schemas.userIdParamsSchema }> = async (
+  req,
+  res,
+) => {
+  const user = await usersService.getUserById(req.params.id);
   sendSuccess(res, user, 'User fetched');
 };
 
-export const create: RequestHandler = async (req, res) => {
+export const create: ValidatedHandler<{ body: typeof schemas.createUserBodySchema }> = async (
+  req,
+  res,
+) => {
   const user = await usersService.createUser(req.body);
   sendSuccess(res, user, 'User created', 201);
 };
 
-export const update: RequestHandler<IdParams> = async (req, res) => {
-  const user = await usersService.updateUser(parseUserId(req.params.id), req.body);
+export const update: ValidatedHandler<{
+  params: typeof schemas.userIdParamsSchema;
+  body: typeof schemas.updateUserBodySchema;
+}> = async (req, res) => {
+  const user = await usersService.updateUser(req.params.id, req.body);
   sendSuccess(res, user, 'User updated');
 };
 
-export const remove: RequestHandler<IdParams> = async (req, res) => {
-  const result = await usersService.deleteUser(parseUserId(req.params.id));
+export const remove: ValidatedHandler<{ params: typeof schemas.userIdParamsSchema }> = async (
+  req,
+  res,
+) => {
+  const result = await usersService.deleteUser(req.params.id);
   sendSuccess(res, result, 'User deleted');
 };
