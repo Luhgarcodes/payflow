@@ -61,7 +61,7 @@ const ensureEmailAvailable = async (email: string, excludeId?: UserId): Promise<
   const where = excludeId
     ? { email, id: { [Op.ne]: excludeId }, isActive: true }
     : { email, isActive: true };
-  if (await User.findOne({ where })) throw AppError.conflict('Email already taken');
+  if (await User.findOne({ where })) throw new AppError('EMAIL_TAKEN');
 };
 
 export const listUsers = (): Promise<User[]> =>
@@ -76,7 +76,7 @@ export const getUserById = async (id: UserId): Promise<User> => {
     where: { id, isActive: true },
     attributes: [...PUBLIC_ATTRIBUTES],
   });
-  if (!user) throw AppError.notFound('User not found');
+  if (!user) throw new AppError('USER_NOT_FOUND');
   return user;
 };
 
@@ -118,7 +118,7 @@ export const updateUser = async (id: UserId, body: unknown): Promise<PublicUser>
   } = body as unknown as UpdateUserInput;
 
   const user = await User.findByPk(id);
-  if (!user) throw AppError.notFound('User not found');
+  if (!user) throw new AppError('USER_NOT_FOUND');
 
   await ensureEmailAvailable(email, id);
 
@@ -142,7 +142,7 @@ export const updateUser = async (id: UserId, body: unknown): Promise<PublicUser>
 
 export const deleteUser = async (id: UserId): Promise<{ id: UserId }> => {
   const user = await User.findOne({ where: { id, isActive: true } });
-  if (!user) throw AppError.notFound('User not found');
+  if (!user) throw new AppError('USER_NOT_FOUND');
 
   await user.update({ isActive: false });
 

@@ -7,7 +7,7 @@ import { isUserId, type UserId } from '../../types/domain';
 type IdParams = { id: string };
 
 const parseUserId = (value: string): UserId => {
-  if (!isUserId(value)) throw AppError.badRequest('Invalid user id');
+  if (!isUserId(value)) throw new AppError('VALIDATION_FAILED', 'Invalid user id');
   return value;
 };
 
