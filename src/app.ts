@@ -1,6 +1,7 @@
 import express from 'express';
 import config from './config';
 import routes from './routes';
+import docs from './routes/docs';
 import notFound from './middleware/notFound';
 import errorHandler from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1', routes);
+app.use('/docs', docs);
 
 app.use(notFound);
 app.use(errorHandler);
