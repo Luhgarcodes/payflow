@@ -1,7 +1,11 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config({ quiet: true });
+// Earlier files win, so .env.test only needs the values that differ from .env.
+dotenv.config({
+  path: process.env.NODE_ENV === 'test' ? ['.env.test', '.env'] : ['.env'],
+  quiet: true,
+});
 
 const bool = z
   .enum(['true', 'false'])
@@ -14,6 +18,7 @@ const envSchema = z.object({
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(15).default(10),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   DB_NAME: z.string().min(1),
   DB_USER: z.string().min(1),
@@ -32,16 +37,16 @@ const envSchema = z.object({
 
   // AES-256-GCM needs exactly 32 bytes; supply as 64 hex chars.
   ENCRYPTION_KEY: z.string().regex(/^[0-9a-fA-F]{64}$/, 'must be 64 hex characters (32 bytes)'),
+  CURSOR_SECRET: z.string().min(32, 'must be at least 32 characters'),
   IPWHO_API_KEY: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('Invalid environment variables');
-  for (const issue of parsed.error.issues) {
-    console.error(`${issue.path.join('.')}: ${issue.message}`);
-  }
+  // The logger depends on config, so startup errors go straight to stderr.
+  const lines = parsed.error.issues.map((issue) => `  ${issue.path.join('.')}: ${issue.message}`);
+  process.stderr.write(`Invalid environment variables\n${lines.join('\n')}\n`);
   process.exit(1);
 }
 
@@ -53,6 +58,8 @@ const config = {
   trustProxy: env.TRUST_PROXY,
   shutdownTimeoutMs: env.SHUTDOWN_TIMEOUT_MS,
   bcryptRounds: env.BCRYPT_ROUNDS,
+  logLevel: env.LOG_LEVEL,
+  cursorSecret: env.CURSOR_SECRET,
   db: {
     name: env.DB_NAME,
     user: env.DB_USER,

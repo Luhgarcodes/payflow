@@ -7,7 +7,7 @@ export default defineConfig(
   { ignores: ['dist/', 'coverage/', 'backups/', 'node_modules/', 'playground/'] },
   js.configs.recommended,
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'tests/**/*.ts'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
@@ -33,13 +33,23 @@ export default defineConfig(
         'error',
         { ignorePrimitives: { string: true } },
       ],
-      'no-console': 'off',
+      'no-console': 'error',
       eqeqeq: ['error', 'always'],
     },
   },
   {
     files: ['src/config/**/*.ts'],
     rules: { 'no-restricted-properties': 'off' },
+  },
+  {
+    // Supertest types response bodies as `any`; tests assert on their shape instead.
+    files: ['src/**/*.test.ts', 'tests/**/*.ts'],
+    rules: {
+      'no-restricted-properties': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
   },
   prettier,
 );

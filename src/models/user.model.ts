@@ -14,10 +14,10 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare phone_no: string;
   declare email: string;
   declare passwordHash: string;
-  declare role: Role;
-  declare kyc_tier: KycTier;
-  declare phone_verified_at: Date | null;
-  declare last_login_at: Date | null;
+  declare role: CreationOptional<Role>;
+  declare kyc_tier: CreationOptional<KycTier>;
+  declare phone_verified_at: CreationOptional<Date | null>;
+  declare last_login_at: CreationOptional<Date | null>;
   declare isActive: CreationOptional<boolean>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -67,8 +67,8 @@ export function initUserModel(sequelize: Sequelize): typeof User {
         defaultValue: true,
         field: 'is_active',
       },
-      createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE,
+      createdAt: DataTypes.DATE(3),
+      updatedAt: DataTypes.DATE(3),
     },
     {
       sequelize,

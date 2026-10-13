@@ -1,7 +1,10 @@
 import { Sequelize } from 'sequelize';
 import config from '../config';
+import { logger } from '../utils/logger';
 
 const { name, user, password, host, port, logging } = config.db;
+
+const sqlLogger = logger.child({ component: 'sequelize' });
 
 export const sequelize = new Sequelize(name, user, password, {
   host,
@@ -10,7 +13,7 @@ export const sequelize = new Sequelize(name, user, password, {
   benchmark: true,
   logging: logging
     ? (sql: string, timing?: number) => {
-        console.log(`[Sequelize] ${sql} - ${String(timing)}ms`);
+        sqlLogger.info({ durationMs: timing }, sql);
       }
     : false,
 });

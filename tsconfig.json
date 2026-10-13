@@ -3,9 +3,9 @@
     "target": "es2022",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -16,5 +16,5 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }

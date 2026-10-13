@@ -1,0 +1,350 @@
+openapi: 3.1.0
+info:
+  title: PayFlow API
+  version: 0.1.0
+  description: |
+    Digital wallet and payments API.
+
+    ## Responses
+
+    Successful responses use `{ status: "success", data, message }`.
+    Errors use `{ status: "error", code, message, details }`, where `code` is a stable value
+    from the error code catalog below. Clients should branch on `code`, never on `message`.
+
+    Every response carries an `X-Request-Id` header. Send your own (letters, digits, `_` and `-`,
+    up to 128 characters) to correlate logs across services; otherwise one is generated.
+
+    ## Error code catalog
+
+    | Code | HTTP | Meaning |
+    | --- | --- | --- |
+    | `BAD_REQUEST` | 400 | The request is malformed in a way not covered by a more specific code |
+    | `VALIDATION_FAILED` | 400 | Params, query or body failed validation; `details` lists each field |
+    | `INVALID_JSON` | 400 | The body is not valid JSON |
+    | `INVALID_CURSOR` | 400 | The pagination cursor is malformed or was tampered with |
+    | `INVALID_AMOUNT` | 400 | A money amount is not a valid whole number of paise |
+    | `INVALID_REFERENCE` | 400 | A referenced record does not exist |
+    | `NOT_FOUND` | 404 | The resource does not exist |
+    | `ROUTE_NOT_FOUND` | 404 | No route matches the method and path |
+    | `USER_NOT_FOUND` | 404 | No active user has this id |
+    | `CONFLICT` | 409 | The resource already exists |
+    | `EMAIL_TAKEN` | 409 | Another active user has this email |
+    | `PHONE_TAKEN` | 409 | Another active user has this phone number |
+    | `PAYLOAD_TOO_LARGE` | 413 | The body exceeds the size limit |
+    | `INTERNAL_ERROR` | 500 | Unexpected server error; quote the X-Request-Id when reporting it |
+
+servers:
+  - url: /api/v1
+
+tags:
+  - name: Users
+
+paths:
+  /users:
+    get:
+      tags: [Users]
+      summary: List active users, newest first
+      operationId: listUsers
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: cursor
+          in: query
+          description: The `nextCursor` from the previous page. Opaque and signed.
+          schema: { type: string }
+      responses:
+        '200':
+          description: One page of users
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [items, nextCursor]
+                        properties:
+                          items:
+                            type: array
+                            items: { $ref: '#/components/schemas/User' }
+                          nextCursor:
+                            type: [string, 'null']
+                            description: Pass as `cursor` to get the next page; null on the last page.
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    post:
+      tags: [Users]
+      summary: Create a user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserBody' }
+      responses:
+        '201':
+          description: User created
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Users]
+      summary: Get an active user
+      operationId: getUser
+      responses:
+        '200':
+          description: The user
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    put:
+      tags: [Users]
+      summary: Replace a user's details
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUserBody' }
+      responses:
+        '200':
+          description: Updated user
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+    delete:
+      tags: [Users]
+      summary: Deactivate a user
+      description: Soft delete. The user's email and phone number become available again.
+      operationId: deleteUser
+      responses:
+        '200':
+          description: User deactivated
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [id]
+                        properties:
+                          id: { type: string, format: uuid }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+components:
+  headers:
+    RequestId:
+      description: Request correlation ID, echoed from the request or generated.
+      schema: { type: string }
+
+  schemas:
+    ErrorCode:
+      type: string
+      description: Stable error code. See the catalog in the API description.
+      enum:
+        - BAD_REQUEST
+        - VALIDATION_FAILED
+        - INVALID_JSON
+        - INVALID_CURSOR
+        - INVALID_AMOUNT
+        - INVALID_REFERENCE
+        - NOT_FOUND
+        - ROUTE_NOT_FOUND
+        - USER_NOT_FOUND
+        - CONFLICT
+        - EMAIL_TAKEN
+        - PHONE_TAKEN
+        - PAYLOAD_TOO_LARGE
+        - INTERNAL_ERROR
+
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          description: Location and path of the invalid value, e.g. `body.email` or `query.limit`.
+          examples: [body.email]
+        message: { type: string, examples: [Invalid email address] }
+
+    Error:
+      type: object
+      required: [status, code, message, details]
+      properties:
+        status: { type: string, const: error }
+        code: { $ref: '#/components/schemas/ErrorCode' }
+        message: { type: string }
+        details:
+          description: Field errors for VALIDATION_FAILED, otherwise null.
+          oneOf:
+            - type: array
+              items: { $ref: '#/components/schemas/FieldError' }
+            - type: 'null'
+
+    SuccessEnvelope:
+      type: object
+      required: [status, data, message]
+      properties:
+        status: { type: string, const: success }
+        data: {}
+        message: { type: string }
+
+    Role:
+      type: string
+      enum: [user, merchant, support, admin]
+
+    KycTier:
+      type: string
+      enum: [none, min, full]
+
+    User:
+      type: object
+      required:
+        [
+          id,
+          name,
+          email,
+          phone_no,
+          isActive,
+          role,
+          kyc_tier,
+          phone_verified_at,
+          last_login_at,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone_no: { type: string, pattern: '^[0-9]{10}$' }
+        isActive: { type: boolean }
+        role: { $ref: '#/components/schemas/Role' }
+        kyc_tier: { $ref: '#/components/schemas/KycTier' }
+        phone_verified_at: { type: [string, 'null'], format: date-time }
+        last_login_at: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data: { $ref: '#/components/schemas/User' }
+
+    CreateUserBody:
+      type: object
+      additionalProperties: false
+      required: [name, email, phone_no, password]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Trimmed and lower-cased before saving.
+        phone_no: { type: string, pattern: '^[0-9]{10}$' }
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+          description: Must contain at least one letter and one number.
+          writeOnly: true
+
+    UpdateUserBody:
+      type: object
+      additionalProperties: false
+      required: [name, email, phone_no]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        email: { type: string, format: email, maxLength: 255 }
+        phone_no: { type: string, pattern: '^[0-9]{10}$' }
+        password: { type: string, minLength: 8, maxLength: 72, writeOnly: true }
+        is_active: { type: boolean }
+        role: { $ref: '#/components/schemas/Role' }
+        kyc_tier: { $ref: '#/components/schemas/KycTier' }
+        phone_verified_at: { type: [string, 'null'], format: date-time }
+        last_login_at: { type: [string, 'null'], format: date-time }
+
+  responses:
+    BadRequest:
+      description: VALIDATION_FAILED, INVALID_JSON, INVALID_CURSOR or BAD_REQUEST
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            status: error
+            code: VALIDATION_FAILED
+            message: Request validation failed
+            details:
+              - field: body.email
+                message: Invalid email address
+    NotFound:
+      description: USER_NOT_FOUND
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            status: error
+            code: USER_NOT_FOUND
+            message: User not found
+            details: null
+    Conflict:
+      description: EMAIL_TAKEN or PHONE_TAKEN
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            status: error
+            code: EMAIL_TAKEN
+            message: Email already taken
+            details: null
+    InternalError:
+      description: INTERNAL_ERROR
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

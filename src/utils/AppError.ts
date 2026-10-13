@@ -1,21 +1,16 @@
+import { ERROR_CATALOG, type ErrorCode } from './errorCodes';
+
 export default class AppError extends Error {
+  readonly code: ErrorCode;
   readonly statusCode: number;
+  readonly details: unknown;
 
-  constructor(message: string, statusCode = 500) {
-    super(message);
+  constructor(code: ErrorCode, message?: string, details?: unknown) {
+    const entry = ERROR_CATALOG[code];
+    super(message ?? entry.message);
     this.name = 'AppError';
-    this.statusCode = statusCode;
-  }
-
-  static badRequest(message = 'Bad Request'): AppError {
-    return new AppError(message, 400);
-  }
-
-  static notFound(message = 'Not Found'): AppError {
-    return new AppError(message, 404);
-  }
-
-  static conflict(message = 'Conflict'): AppError {
-    return new AppError(message, 409);
+    this.code = code;
+    this.statusCode = entry.status;
+    this.details = details ?? null;
   }
 }
